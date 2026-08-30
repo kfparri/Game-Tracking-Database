@@ -1,0 +1,420 @@
+﻿<Window x:Class="GameTracker.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameTracker.App"
+        mc:Ignorable="d"
+        Title="Game Tracker" Height="700" Width="1000"
+        Background="{StaticResource WindowBackgroundBrush}">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="7*" MinWidth="300" />
+            <ColumnDefinition Width="5" />
+            <ColumnDefinition Width="3*" MinWidth="250" />
+        </Grid.ColumnDefinitions>
+        
+        <!-- Game Gallery list -->
+        <Grid Grid.Column="0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <ItemsControl ItemsSource="{Binding Games}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Width="140" Height="180" Margin="8" BorderThickness="2"
+                                    Background="{StaticResource TileBackgroundBrush}" 
+                                    CornerRadius="4"
+                                    Cursor="Hand">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"></Setter>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <Border.InputBindings>
+                                    <MouseBinding MouseAction="LeftClick"
+                                                  Command="{Binding DataContext.OpenDetailsCommand,
+                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                  CommandParameter="{Binding}" />
+                                </Border.InputBindings>
+                                <StackPanel>
+                                    <Image Source="{Binding IconAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                            Height="140" Stretch="UniformToFill" />
+                                    <TextBlock Text="{Binding Title}"
+                                               Foreground="{StaticResource PrimaryTextBrush}"
+                                               TextTrimming="CharacterEllipsis"
+                                               Margin="4" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <!-- Add Game button -->
+            <Button Content="+ Add Game"
+                    Command="{Binding NewGameCommand}"
+                    Background="{StaticResource AccentBrush}"
+                    Foreground="{StaticResource PrimaryTextBrush}"
+                    Padding="16,10"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Margin="20,0,0,20"
+                    Cursor="Hand">
+                <Button.Effect>
+                    <DropShadowEffect Color="Black" BlurRadius="10" ShadowDepth="2" Opacity="0.4"/>
+                </Button.Effect>
+            </Button>
+        </Grid>
+        
+        <!-- Toast Messages -->
+        <ItemsControl ItemsSource="{Binding Toasts}"
+              HorizontalAlignment="Right" VerticalAlignment="Bottom"
+              Margin="0,0,20,20">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border 
+                            CornerRadius="4" Padding="14,10" Margin="0,4,0,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Severity}" Value="Success">
+                                        <Setter Property="Background" Value="{StaticResource SuccessBrush}"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Severity}" Value="Info">
+                                        <Setter Property="Background" Value="{StaticResource InfoBrush}"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Severity}" Value="Error">
+                                        <Setter Property="Background" Value="{StaticResource DangerBrush}"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text}"
+                                       Foreground="{StaticResource PrimaryTextBrush}"/>    
+                        </StackPanel>
+                        
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Resize handle -->
+        <GridSplitter Visibility="{Binding SelectedGame, Converter={StaticResource NullToVisibilityConverter}}"
+                      Grid.Column="1" 
+                      Width="5" 
+                      Background="{StaticResource DividerBrush}" 
+                      HorizontalAlignment="Stretch" 
+                      VerticalAlignment="Stretch" 
+                      ResizeDirection="Columns" />
+        
+        <!-- Detail flyout -->
+        <Border Grid.Column="2" 
+                HorizontalAlignment="Right"
+                Background="{StaticResource FlyoutBackgroundBrush}"
+                Visibility="{Binding SelectedGame, Converter={StaticResource NullToVisibilityConverter}}">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    
+                    <!-- View mode -->
+                    <StackPanel Visibility="{Binding SelectedGame.IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}}">
+
+                        <Border Height="220" CornerRadius="4" Background="{StaticResource TileBackgroundBrush}">
+                            <Image Source="{Binding SelectedGame.CoverAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                   Stretch="UniformToFill"></Image>
+                        </Border>
+                        
+                        <!-- Title + Edit button on the same row so edit is always visible -->
+                        <Grid Margin="0,16,0,16">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <!-- Title -->
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding SelectedGame.Title}"
+                                       Foreground="{StaticResource PrimaryTextBrush}"
+                                       FontSize="20" FontWeight="Bold"
+                                       TextWrapping="Wrap"
+                                       VerticalAlignment="Center"/>
+
+                            <!-- Edit Button -->
+                            <Button Grid.Column="1"
+                                    Content="Edit"
+                                    Command="{Binding SelectedGame.BeginEditCommand}"
+                                    Background="{StaticResource AccentBrush}"
+                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                    Padding="14,6"
+                                    VerticalAlignment="Center"
+                                    Margin="12,0,0,0"/>
+                        </Grid>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="120"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Game ID -->
+                            <TextBlock Grid.Row="0" Grid.Column="0" Text="Game ID:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SelectedGame.Id}" Style="{StaticResource FieldValueStyle}"/>
+
+                            <!-- Platform -->
+                            <TextBlock Grid.Row="1" Grid.Column="0" Text="Platform:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding SelectedGame.Platform}" Style="{StaticResource FieldValueStyle}"/>
+
+                            <!-- Publisher -->
+                            <TextBlock Grid.Row="2" Grid.Column="0" Text="Publisher:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedGame.Publisher}" Style="{StaticResource FieldValueStyle}"/>
+
+                            <!-- Min Players -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Min Players:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedGame.MinPlayers}" Style="{StaticResource FieldValueStyle}"/>
+
+                            <!-- Max Players -->
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Max Players:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedGame.MaxPlayers}" Style="{StaticResource FieldValueStyle}"/>
+
+                            <!-- Release Date -->
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Release Date:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedGame.ReleaseDate}" Style="{StaticResource FieldValueStyle}"/>
+
+                            <!-- Purchased From -->
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Purchased From:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedGame.PurchasedFrom}" Style="{StaticResource FieldValueStyle}"/>
+                        </Grid>
+
+                        <!-- Played -->
+                        <CheckBox Content="Played" 
+                                  IsChecked="{Binding SelectedGame.Played}" 
+                                  Foreground="{StaticResource SecondaryTextBrush}" 
+                                  Margin="0,16,0,0" />
+
+                        <!-- Completed -->
+                        <CheckBox Content="Completed" 
+                                  IsChecked="{Binding SelectedGame.Completed}" 
+                                  Foreground="{StaticResource SecondaryTextBrush}" 
+                                  Margin="0,16,0,0" />
+
+                        <!-- Physical Copy -->
+                        <CheckBox Content="Physical Copy" 
+                                  IsHitTestVisible="False"
+                                  IsChecked="{Binding SelectedGame.PhysicalCopy}" 
+                                  Foreground="{StaticResource SecondaryTextBrush}" 
+                                  Margin="0,16,0,0" />
+                        
+                        <!-- Notes -->
+                        <TextBlock Text="Notes:" 
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBlock Text="{Binding SelectedGame.Notes}"
+                                   Foreground="{StaticResource PrimaryTextBrush}"
+                                   FontSize="14"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                    
+                    <!-- Edit mode -->
+                    <StackPanel Visibility="{Binding SelectedGame.IsEditing, Converter={StaticResource BoolToVisibilityConverter}}">
+                        <TextBlock Text="Cover Image:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <Border x:Name="CoverDropZone"
+                            Height="100" CornerRadius="4"
+                            Background="{StaticResource FlyoutBackgroundBrush}"
+                            BorderBrush="{StaticResource DividerBrush}" BorderThickness="1"
+                            AllowDrop="True"
+                            Cursor="Hand"
+                            Drop="CoverDropZone_Drop"
+                            DragOver="CoverDropZone_DragOver"
+                            MouseLeftButtonUp="CoverDropZone_Click">
+                            <Grid>
+                                <Image Source="{Binding SelectedGame.CoverAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                   Stretch="UniformToFill"/>
+                                <TextBlock Text="Click or drop image here"
+                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center"
+                                       Visibility="{Binding SelectedGameDetail.CoverImageAbsolutePath,
+                                                    Converter={StaticResource NullToVisibilityConverter}}"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Title -->
+                        <TextBlock Text="Title:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.Title, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Game ID -->
+                        <TextBlock Text="Game ID:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBlock Text="{Binding SelectedGame.Id, UpdateSourceTrigger=PropertyChanged}"
+                                   Style="{StaticResource FieldLabelStyle}"/>
+
+                        <!-- Platform -->
+                        <TextBlock Text="Platform(s):"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.Platform, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Publisher -->
+                        <TextBlock Text="Publisher:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.Publisher, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Min Players -->
+                        <TextBlock Text="Min Players:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.MinPlayers, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Max Players -->
+                        <TextBlock Text="Max Players:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.MaxPlayers, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Release Date -->
+                        <TextBlock Text="Release Date:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.ReleaseDate, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Purchased From -->
+                        <TextBlock Text="Purchased From:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.PurchasedFrom, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Icon Image -->
+                        <TextBlock Text="Icon Image:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>          
+                        <Border x:Name="CoverDropZone2"
+                                 Width="140" CornerRadius="4"
+                                Background="{StaticResource FlyoutBackgroundBrush}"
+                                BorderBrush="{StaticResource DividerBrush}" BorderThickness="1"
+                                AllowDrop="True"
+                                Cursor="Hand"
+                                Drop="IconDropZone_Drop"
+                                DragOver="IconDropZone_DragOver"
+                                MouseLeftButtonUp="IconDropZone_Click">
+                            <Grid>
+                                <Image Source="{Binding SelectedGame.IconAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                       Stretch="UniformToFill" Height="140"/>
+                                <TextBlock Text="Click or drop image here"
+                                           Foreground="{StaticResource SecondaryTextBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"
+                                           Visibility="{Binding SelectedGameDetail.CoverImageAbsolutePath, Converter={StaticResource NullToVisibilityConverter}}"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Played -->
+                        <CheckBox Content="Played" 
+                              IsChecked="{Binding SelectedGame.Played}" 
+                              Foreground="{StaticResource SecondaryTextBrush}" 
+                              Margin="0,16,0,0" />
+
+                        <!-- Completed -->
+                        <CheckBox Content="Completed" 
+                                  IsChecked="{Binding SelectedGame.Completed}" 
+                                  Foreground="{StaticResource SecondaryTextBrush}" 
+                                  Margin="0,16,0,0" />
+
+                        <!-- Physical Copy -->
+                        <CheckBox Content="Physical Copy" 
+                                  IsChecked="{Binding SelectedGame.PhysicalCopy}" 
+                                  Foreground="{StaticResource SecondaryTextBrush}" 
+                                  Margin="0,16,0,0" />
+
+                        <!-- Notes -->
+                        <TextBlock Text="Notes:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.Notes, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"
+                                 AcceptsReturn="True"
+                                 TextWrapping="Wrap"
+                                 Height="80"/>
+                        
+                        <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
+                            <!-- Delete -->
+                            <Button Content="Delete"
+                                    Visibility="{Binding SelectedGame.IsNewEntry, Converter={StaticResource InverseBoolToVisibilityConverter}}"
+                                    Command="{Binding DeleteCommand}"
+                                    Background="{StaticResource DangerBrush}"
+                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                    Padding="16,8"
+                                    Margin="0,0,40,0"/>
+
+                            <!-- Cancel -->
+                            <Button Content="Cancel"
+                                    Command="{Binding CancelEditCommand}"
+                                    Padding="16,8"
+                                    Margin="0,0,8,0"/>
+
+                            <!-- Save -->
+                            <Button Content="Save"
+                                    Command="{Binding SaveCommand}"
+                                    Background="{StaticResource AccentBrush}"
+                                    Foreground="{StaticResource PrimaryTextBrush}"
+                                    Padding="16,8" Margin="0,0,8,0"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</Window>

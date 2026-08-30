@@ -1,0 +1,42 @@
+﻿<Application x:Class="GameTracker.App.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:GameTracker.App"
+             xmlns:converters="clr-namespace:GameTracker.App.Converters">
+    <Application.Resources>
+        <converters:NullToVisiblityConverter x:Key="NullToVisibilityConverter" />
+        <converters:PathToImageSourceConverter x:Key="PathToImageSourceConverter" />
+        <converters:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+        <converters:InverseBoolToVisibilityConverter x:Key="InverseBoolToVisibilityConverter" />
+
+        <SolidColorBrush x:Key="WindowBackgroundBrush" Color="#1E1E1E"/>
+        <SolidColorBrush x:Key="TileBackgroundBrush" Color="#2A2A2A"/>
+        <SolidColorBrush x:Key="TileHoverBrush" Color="#363636"/>
+        <SolidColorBrush x:Key="FlyoutBackgroundBrush" Color="#252525"/>
+        <SolidColorBrush x:Key="PrimaryTextBrush" Color="#E8E8E8"/>
+        <SolidColorBrush x:Key="SecondaryTextBrush" Color="#A0A0A0"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#4FB3A9"/>
+        <SolidColorBrush x:Key="DividerBrush" Color="#555" />
+        <SolidColorBrush x:Key="TextBoxBackgroundBrush" Color="#1A1A1A"/>
+        <SolidColorBrush x:Key="TextBoxBorderBrush" Color="#444444"/>
+        <SolidColorBrush x:Key="TextBoxDisabledBackgroundBrush" Color="#232323"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#C64B4B"/>
+        <SolidColorBrush x:Key="DangerHoverBrush" Color="#D65C5C"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="Green"/>
+        <SolidColorBrush x:Key="InfoBrush" Color="Blue"/>
+
+        <Style x:Key="FieldLabelStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,12,8"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+
+        <Style x:Key="FieldValueStyle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+    </Application.Resources>
+</Application>
