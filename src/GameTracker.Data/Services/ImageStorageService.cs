@@ -3,17 +3,17 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace GameTracker.Data
+namespace GameTracker.Data.Services
 {
     public class ImageStorageService : IImageStorageService
     {
         private readonly string _rootPath;
         private readonly string _imageFolderPath;
 
-        public ImageStorageService(string appDataRoot)
+        public ImageStorageService(AppPaths appPaths)
         {
-            _rootPath = appDataRoot;
-            _imageFolderPath = Path.Combine(_rootPath, "images");
+            _rootPath = appPaths.RootDirectory;
+            _imageFolderPath = appPaths.ImagesDirectory;
 
             Directory.CreateDirectory(_imageFolderPath);
             //Directory.CreateDirectory(Path.Combine(_rootPath, "icons"));

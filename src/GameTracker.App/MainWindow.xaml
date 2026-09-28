@@ -8,14 +8,42 @@
         Title="Game Tracker" Height="700" Width="1000"
         Background="{StaticResource WindowBackgroundBrush}">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="7*" MinWidth="300" />
-            <ColumnDefinition Width="5" />
-            <ColumnDefinition Width="3*" MinWidth="250" />
+            <ColumnDefinition Width="*" MinWidth="300" />
+            <ColumnDefinition>
+                <ColumnDefinition.Style>
+                    <Style TargetType="ColumnDefinition">
+                        <Setter Property="Width" Value="380"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding SelectedGame}" Value="{x:Null}">
+                                <Setter Property="Width" Value="0"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </ColumnDefinition.Style>
+            </ColumnDefinition>
         </Grid.ColumnDefinitions>
-        
+
+        <Grid Grid.Row="0" Margin="20,26,60,8">
+            <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                     Foreground="{StaticResource PrimaryTextBrush}" 
+                     Background="{StaticResource TextBoxBackgroundBrush}" 
+                     BorderBrush="{StaticResource TextBoxBorderBrush}"
+                     Padding="10,8"/>
+            <TextBlock Text="Search games..."
+                       Foreground="{StaticResource PrimaryTextBrush}" 
+                       Background="{StaticResource TextBoxBackgroundBrush}" 
+                       IsHitTestVisible="False"
+                       Margin="12,0,5,0"
+                       VerticalAlignment="Center"
+                       Visibility="{Binding SearchText, Converter={StaticResource StringEmptyToVisibilityConverter}}"/>
+        </Grid>
         <!-- Game Gallery list -->
-        <Grid Grid.Column="0">
+        <Grid Grid.Row="1" Grid.Column="0">
             <ScrollViewer VerticalScrollBarVisibility="Auto">
                 <ItemsControl ItemsSource="{Binding Games}">
                     <ItemsControl.ItemsPanel>
@@ -26,7 +54,7 @@
 
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Width="140" Height="180" Margin="8" BorderThickness="2"
+                            <Border Width="140" Height="230" Margin="8" BorderThickness="2"
                                     Background="{StaticResource TileBackgroundBrush}" 
                                     CornerRadius="4"
                                     Cursor="Hand">
@@ -47,12 +75,26 @@
                                                   CommandParameter="{Binding}" />
                                 </Border.InputBindings>
                                 <StackPanel>
-                                    <Image Source="{Binding IconAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
-                                            Height="140" Stretch="UniformToFill" />
+                                    <!--<Image Source="{Binding IconAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                            Height="140" Stretch="UniformToFill" />-->
+                                    <!-- Backdrop: cropped to fill, blurred, dimmed -->
+                                    <Grid Height="200" ClipToBounds="true">
+                                        <Image Source="{Binding IconAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                               Stretch="UniformToFill"
+                                               Opacity="0.5">
+                                            <Image.Effect>
+                                                <BlurEffect Radius="25" KernelType="Gaussian"/>
+                                            </Image.Effect>
+                                        </Image>
+                                        <!-- Foreground: full image, never cropped -->
+                                        <Image Source="{Binding IconAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
+                                               Stretch="Uniform"/>
+                                    </Grid>
                                     <TextBlock Text="{Binding Title}"
-                                               Foreground="{StaticResource PrimaryTextBrush}"
-                                               TextTrimming="CharacterEllipsis"
-                                               Margin="4" HorizontalAlignment="Center" />
+                                                   Foreground="{StaticResource PrimaryTextBrush}"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   Margin="4" HorizontalAlignment="Center" />
+                                    
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
@@ -76,56 +118,66 @@
             </Button>
         </Grid>
         
-        <!-- Toast Messages -->
-        <ItemsControl ItemsSource="{Binding Toasts}"
-              HorizontalAlignment="Right" VerticalAlignment="Bottom"
-              Margin="0,0,20,20">
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <StackPanel Orientation="Vertical"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
-            <ItemsControl.ItemTemplate>
-                <DataTemplate>
-                    <Border 
-                            CornerRadius="4" Padding="14,10" Margin="0,4,0,0">
-                        <Border.Style>
-                            <Style TargetType="Border">
-                                <Setter Property="Background" Value="Transparent"/>
-                                <Style.Triggers>
-                                    <DataTrigger Binding="{Binding Severity}" Value="Success">
-                                        <Setter Property="Background" Value="{StaticResource SuccessBrush}"></Setter>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Severity}" Value="Info">
-                                        <Setter Property="Background" Value="{StaticResource InfoBrush}"></Setter>
-                                    </DataTrigger>
-                                    <DataTrigger Binding="{Binding Severity}" Value="Error">
-                                        <Setter Property="Background" Value="{StaticResource DangerBrush}"></Setter>
-                                    </DataTrigger>
-                                </Style.Triggers>
-                            </Style>
-                        </Border.Style>
-                        <StackPanel>
-                            <TextBlock Text="{Binding Text}"
-                                       Foreground="{StaticResource PrimaryTextBrush}"/>    
-                        </StackPanel>
-                        
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-
-        <!-- Resize handle -->
-        <GridSplitter Visibility="{Binding SelectedGame, Converter={StaticResource NullToVisibilityConverter}}"
-                      Grid.Column="1" 
-                      Width="5" 
-                      Background="{StaticResource DividerBrush}" 
-                      HorizontalAlignment="Stretch" 
-                      VerticalAlignment="Stretch" 
-                      ResizeDirection="Columns" />
+        <!-- Settings button -->
+        <Button 
+                Command="{Binding OpenSettingsCommand}"
+                HorizontalAlignment="Right" VerticalAlignment="Top"
+                Margin="0,16,16,0"
+                Width="30"
+                Height="30"
+                Background="Transparent"
+                Foreground="{StaticResource SecondaryTextBrush}"
+                FontSize="18" BorderThickness="0">
+            <Path Fill="{StaticResource SecondaryTextBrush}"
+                  Stretch="Uniform"
+                  Data="M19.43,12.98
+                        C19.47,12.66 19.5,12.34 19.5,12
+                        C19.5,11.66 19.47,11.34 19.43,11.02
+                        L21.54,9.37
+                        C21.73,9.22 21.78,8.95 21.66,8.73
+                        L19.66,5.27
+                        C19.54,5.05 19.27,4.96 19.05,5.05
+                        L16.56,6.05
+                        C16.04,5.66 15.48,5.32 14.87,5.07
+                        L14.5,2.42
+                        C14.47,2.18 14.25,2 14,2
+                        L10,2
+                        C9.75,2 9.53,2.18 9.5,2.42
+                        L9.13,5.07
+                        C8.52,5.32 7.96,5.66 7.44,6.05
+                        L4.95,5.05
+                        C4.73,4.96 4.46,5.05 4.34,5.27
+                        L2.34,8.73
+                        C2.22,8.95 2.27,9.22 2.46,9.37
+                        L4.57,11.02
+                        C4.53,11.34 4.5,11.66 4.5,12
+                        C4.5,12.34 4.53,12.66 4.57,12.98
+                        L2.46,14.63
+                        C2.27,14.78 2.22,15.05 2.34,15.27
+                        L4.34,18.73
+                        C4.46,18.95 4.73,19.04 4.95,18.95
+                        L7.44,17.95
+                        C7.96,18.34 8.52,18.68 9.13,18.93
+                        L9.5,21.58
+                        C9.53,21.82 9.75,22 10,22
+                        L14,22
+                        C14.25,22 14.47,21.82 14.5,21.58
+                        L14.87,18.93
+                        C15.48,18.68 16.04,18.34 16.56,17.95
+                        L19.05,18.95
+                        C19.27,19.04 19.54,18.95 19.66,18.73
+                        L21.66,15.27
+                        C21.78,15.05 21.73,14.78 21.54,14.63
+                        Z
+                        M12,15.5
+                        A3.5,3.5 0 1 1 12,8.5
+                        A3.5,3.5 0 1 1 12,15.5" />
+        </Button>
         
+        
+
         <!-- Detail flyout -->
-        <Border Grid.Column="2" 
+        <Border Grid.Row="1" Grid.Column="1" 
                 HorizontalAlignment="Right"
                 Background="{StaticResource FlyoutBackgroundBrush}"
                 Visibility="{Binding SelectedGame, Converter={StaticResource NullToVisibilityConverter}}">
@@ -138,7 +190,7 @@
                     <!-- View mode -->
                     <StackPanel Visibility="{Binding SelectedGame.IsEditing, Converter={StaticResource InverseBoolToVisibilityConverter}}">
 
-                        <Border Height="220" CornerRadius="4" Background="{StaticResource TileBackgroundBrush}">
+                        <Border  CornerRadius="4" Background="{StaticResource TileBackgroundBrush}">
                             <Image Source="{Binding SelectedGame.CoverAbsolutePath, Converter={StaticResource PathToImageSourceConverter}}"
                                    Stretch="UniformToFill"></Image>
                         </Border>
@@ -181,6 +233,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Game ID -->
@@ -195,21 +248,25 @@
                             <TextBlock Grid.Row="2" Grid.Column="0" Text="Publisher:" Style="{StaticResource FieldLabelStyle}"/>
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding SelectedGame.Publisher}" Style="{StaticResource FieldValueStyle}"/>
 
+                            <!-- Publisher Game ID -->
+                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Publisher Game ID:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedGame.PublisherGameID}" Style="{StaticResource FieldValueStyle}"/>
+
                             <!-- Min Players -->
-                            <TextBlock Grid.Row="3" Grid.Column="0" Text="Min Players:" Style="{StaticResource FieldLabelStyle}"/>
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding SelectedGame.MinPlayers}" Style="{StaticResource FieldValueStyle}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Min Players:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedGame.MinPlayers}" Style="{StaticResource FieldValueStyle}"/>
 
                             <!-- Max Players -->
-                            <TextBlock Grid.Row="4" Grid.Column="0" Text="Max Players:" Style="{StaticResource FieldLabelStyle}"/>
-                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding SelectedGame.MaxPlayers}" Style="{StaticResource FieldValueStyle}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Max Players:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedGame.MaxPlayers}" Style="{StaticResource FieldValueStyle}"/>
 
                             <!-- Release Date -->
-                            <TextBlock Grid.Row="5" Grid.Column="0" Text="Release Date:" Style="{StaticResource FieldLabelStyle}"/>
-                            <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding SelectedGame.ReleaseDate}" Style="{StaticResource FieldValueStyle}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Release Date:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedGame.ReleaseDate}" Style="{StaticResource FieldValueStyle}"/>
 
                             <!-- Purchased From -->
-                            <TextBlock Grid.Row="6" Grid.Column="0" Text="Purchased From:" Style="{StaticResource FieldLabelStyle}"/>
-                            <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding SelectedGame.PurchasedFrom}" Style="{StaticResource FieldValueStyle}"/>
+                            <TextBlock Grid.Row="7" Grid.Column="0" Text="Purchased From:" Style="{StaticResource FieldLabelStyle}"/>
+                            <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding SelectedGame.PurchasedFrom}" Style="{StaticResource FieldValueStyle}"/>
                         </Grid>
 
                         <!-- Played -->
@@ -239,6 +296,24 @@
                                    Foreground="{StaticResource PrimaryTextBrush}"
                                    FontSize="14"
                                    TextWrapping="Wrap"/>
+
+                        <TextBlock Text="Tags" Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <ItemsControl ItemsSource="{Binding SelectedGame.Tags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource TagChipStyle}">
+                                        <TextBlock Text="{Binding Name}"
+                                                   Style="{StaticResource TagChipTextStyle}"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
                     </StackPanel>
                     
                     <!-- Edit mode -->
@@ -247,7 +322,7 @@
                                    Style="{StaticResource FieldLabelStyle}"
                                    Margin="0,16,0,4"/>
                         <Border x:Name="CoverDropZone"
-                            Height="100" CornerRadius="4"
+                            CornerRadius="4"
                             Background="{StaticResource FlyoutBackgroundBrush}"
                             BorderBrush="{StaticResource DividerBrush}" BorderThickness="1"
                             AllowDrop="True"
@@ -261,7 +336,7 @@
                                 <TextBlock Text="Click or drop image here"
                                        Foreground="{StaticResource SecondaryTextBrush}"
                                        HorizontalAlignment="Center" VerticalAlignment="Center"
-                                       Visibility="{Binding SelectedGameDetail.CoverImageAbsolutePath,
+                                       Visibility="{Binding SelectedGame.CoverAbsolutePath,
                                                     Converter={StaticResource NullToVisibilityConverter}}"/>
                             </Grid>
                         </Border>
@@ -296,6 +371,15 @@
                                    Style="{StaticResource FieldLabelStyle}"
                                    Margin="0,16,0,4"/>
                         <TextBox Text="{Binding SelectedGame.Publisher, UpdateSourceTrigger=PropertyChanged}"
+                                 Foreground="{StaticResource PrimaryTextBrush}" 
+                                 Background="{StaticResource TextBoxBackgroundBrush}" 
+                                 BorderBrush="{StaticResource TextBoxBorderBrush}"/>
+
+                        <!-- Publisher -->
+                        <TextBlock Text="Publisher Game ID:"
+                                   Style="{StaticResource FieldLabelStyle}"
+                                   Margin="0,16,0,4"/>
+                        <TextBox Text="{Binding SelectedGame.PublisherGameID, UpdateSourceTrigger=PropertyChanged}"
                                  Foreground="{StaticResource PrimaryTextBrush}" 
                                  Background="{StaticResource TextBoxBackgroundBrush}" 
                                  BorderBrush="{StaticResource TextBoxBorderBrush}"/>
@@ -355,7 +439,7 @@
                                 <TextBlock Text="Click or drop image here"
                                            Foreground="{StaticResource SecondaryTextBrush}"
                                            HorizontalAlignment="Center" VerticalAlignment="Center"
-                                           Visibility="{Binding SelectedGameDetail.CoverImageAbsolutePath, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                           Visibility="{Binding SelectedGame.IconAbsolutePath, Converter={StaticResource NullToVisibilityConverter}}"/>
                             </Grid>
                         </Border>
 
@@ -389,6 +473,97 @@
                                  TextWrapping="Wrap"
                                  Height="80"/>
                         
+                        <!-- Tags -->
+                        <TextBlock Text="Tags" Style="{StaticResource FieldLabelStyle}" Margin="0,16,0,4"/>
+
+                        <ItemsControl ItemsSource="{Binding SelectedGame.Tags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal"/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource TagChipStyle}">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource TagChipTextStyle}"/>
+                                            <TextBlock Text=" X"
+                                                       Foreground="{StaticResource SecondaryTextBrush}"
+                                                       FontSize="12"
+                                                       Cursor="Hand"
+                                                       Margin="4,0,0,0">
+                                                <TextBlock.InputBindings>
+                                                    <MouseBinding MouseAction="LeftClick"
+                                                                  Command="{Binding DataContext.SelectedGame.RemoveTagCommand,
+                                                                            RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                  CommandParameter="{Binding}"/>
+                                                </TextBlock.InputBindings>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox x:Name="TagInputBox" 
+                                     Grid.Column="0"
+                                     Text="{Binding SelectedGame.NewTagText, UpdateSourceTrigger=PropertyChanged}">
+                                <TextBox.InputBindings>
+                                    <KeyBinding Key="Return"
+                                                Command="{Binding SelectedGame.AddTagCommand}"/>
+                                    <KeyBinding Key="Esc"
+                                                Command="{Binding SelectedGame.CloseSuggestionsCommand}"/>
+                                </TextBox.InputBindings>
+                            </TextBox>
+                            <Button Grid.Column="1"
+                                    Content="Add"
+                                    Command="{Binding SelectedGame.AddTagCommand}"
+                                    Padding="12,4"
+                                    Margin="8,0,0,0"/>
+                            <Popup PlacementTarget="{Binding ElementName=TagInputBox}"
+                                   Placement="Bottom"
+                                   IsOpen="{Binding SelectedGame.IsTagSuggestionsOpen}"
+                                   StaysOpen="False"
+                                   Width="{Binding ElementName=TagInputBox, Path=ActualWidth}">
+                                <Border Background="{StaticResource FlyoutBackgroundBrush}"
+                                        BorderBrush="{StaticResource TileBackgroundBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                    <ItemsControl ItemsSource="{Binding SelectedGame.TagSuggestions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Padding="10,6" Cursor="Hand">
+                                                    <Border.InputBindings>
+                                                        <MouseBinding MouseAction="LeftClick"
+                                                                      Command="{Binding DataContext.SelectedGame.SelectSuggestionCommand, 
+                                                                                RelativeSource={RelativeSource AncestorType=Window}}"
+                                                                      CommandParameter="{Binding}"/>
+                                                    </Border.InputBindings>
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter Property="Background" Value="{StaticResource TileBackgroundBrush}"/>
+                                                                </Trigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding}"
+                                                               Foreground="{StaticResource PrimaryTextBrush}"
+                                                               FontSize="13"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Border>
+                            </Popup>
+                        </Grid>
+
                         <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                             <!-- Delete -->
                             <Button Content="Delete"
@@ -416,5 +591,47 @@
                 </Grid>
             </ScrollViewer>
         </Border>
+        <!-- Toast Messages -->
+        <ItemsControl ItemsSource="{Binding Toasts}"
+                      Grid.Column="0"
+                      Grid.ColumnSpan="2"
+                      Panel.ZIndex="100"
+                      IsHitTestVisible="False"                      
+                      HorizontalAlignment="Right" 
+                      VerticalAlignment="Bottom"
+                      Margin="0,0,20,20">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical"/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border 
+                    CornerRadius="4" Padding="14,10" Margin="0,4,0,0">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Background" Value="Transparent"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Severity}" Value="Success">
+                                        <Setter Property="Background" Value="{StaticResource SuccessBrush}"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Severity}" Value="Info">
+                                        <Setter Property="Background" Value="{StaticResource InfoBrush}"></Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding Severity}" Value="Error">
+                                        <Setter Property="Background" Value="{StaticResource DangerBrush}"></Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Text}"
+                               Foreground="{StaticResource PrimaryTextBrush}"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
     </Grid>
 </Window>

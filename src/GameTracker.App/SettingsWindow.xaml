@@ -1,0 +1,131 @@
+﻿<Window x:Class="GameTracker.App.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:GameTracker.App"
+        mc:Ignorable="d"
+        Title="Settings" Height="820" Width="480"
+        Background="{StaticResource WindowBackgroundBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            
+            <TextBlock Text="Data Management"
+                   FontSize="16" FontWeight="Bold"
+                   Foreground="{StaticResource PrimaryTextBrush}"
+                   Margin="0,0,0,4"/>
+
+            <Border Height="1" Background="{StaticResource TileBackgroundBrush}" 
+                Margin="0,0,0,16"/>
+
+            <TextBlock Text="Database Location:"
+                   Foreground="{StaticResource PrimaryTextBrush}"
+                   FontSize="12"
+                   Margin="0,0,0,4"/>
+            <TextBlock Text="{Binding DatabaseLocation}" 
+                   Foreground="{StaticResource SecondaryTextBrush}"
+                   FontSize="12"
+                   Margin="0,0,0,16"
+                   TextWrapping="Wrap"/>
+
+            <Button Content="Backup Now"
+                Command="{Binding BackupCommand}"
+                Background="{StaticResource AccentBrush}"
+                Foreground="{StaticResource PrimaryTextBrush}"
+                Padding="14,8"
+                HorizontalAlignment="Left" />
+
+            <TextBlock Text="Last Backup:"
+                   Foreground="{StaticResource PrimaryTextBrush}"
+                   FontSize="12"
+                   Margin="0,10,0,4"
+                   HorizontalAlignment="Left"/>
+            <TextBlock Text="{Binding LastBackupDisplay}"
+                   Foreground="{StaticResource SecondaryTextBrush}"
+                   FontSize="12"
+                   Margin="0,10,0,20"/>
+
+            <Button Content="Restore from Backup..."
+                Command="{Binding RestoreCommand}"
+                Padding="14,8" 
+                HorizontalAlignment="Left"
+                Margin="0,0,0,20"/>
+
+            <TextBlock Text="Export &amp; Import"
+                   FontSize="16" FontWeight="Bold"
+                   Foreground="{StaticResource PrimaryTextBrush}"
+                   Margin="0,0,0,4" />
+            <Border Height="1" Background="{StaticResource TileBackgroundBrush}"
+                Margin="0,0,0,16"/>
+
+            <StackPanel Orientation="Horizontal" Margin="0,0,8,0">
+                <ComboBox ItemsSource="{Binding AvailableFormats}"
+                      SelectedItem="{Binding SelectedExportFormat}"
+                      Width="120" Margin="0,0,8,0"/>
+                <Button Content="Export Library..."
+                    Command="{Binding ExportCommand}"
+                    Padding="14,8"/>
+            </StackPanel>
+
+            <Button Content="Import Steam Data"
+                    Command="{Binding ImportSteamJsonCommand}"
+                    Padding="14,8" 
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Left"/>
+
+            <Button Content="Import GOG Data"
+                    Command="{Binding ImportGogJsonCommand}"
+                    Padding="14,8"
+                    Margin="0,8,0,0"
+                    HorizontalAlignment="Left"/>
+
+            <!--<Button Content="Import Library..."
+                Command="{Binding ImportCommand}"
+                Padding="14,8"
+                HorizontalAlignment="Left"/>-->
+
+            <TextBlock Text="Danger Zone"
+                   FontSize="16" FontWeight="Bold"
+                   Foreground="{StaticResource PrimaryTextBrush}"
+                   Margin="0,24,0,4"/>
+            <Border Height="1" Background="{StaticResource DangerBrush}" Margin="0,0,0,16"/>
+
+            <TextBlock Text="Resetting permanently deletes all games, tags, and images, and recreates an empty database. A backup is saved automatically first."
+                    Foreground="{StaticResource SecondaryTextBrush}"
+                    FontSize="12" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+            <TextBlock Text="Type RESET to confirm:"
+                    Foreground="{StaticResource SecondaryTextBrush}"
+                    FontSize="12" Margin="0,0,0,4"/>
+            <TextBox Text="{Binding ResetConfirmationText, UpdateSourceTrigger=PropertyChanged}"
+                    Width="150" HorizontalAlignment="Left" Margin="0,0,0,10"/>
+
+            <Button Content="Reset Database"
+                    Command="{Binding ResetDatabaseCommand}"
+                    Background="{StaticResource DangerBrush}"
+                    Foreground="{StaticResource PrimaryTextBrush}"
+                    Padding="14,8" HorizontalAlignment="Left"/>
+        
+            <Grid Background="{StaticResource WindowBackgroundBrush}"
+                  Visibility="{Binding IsImporting, 
+                  Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel HorizontalAlignment="Center" 
+                            VerticalAlignment="Center" 
+                            Background="{StaticResource WindowBackgroundBrush}"
+                            Width="260">
+                    <TextBlock Text="{Binding ImportStatusText}"
+                       Foreground="{StaticResource PrimaryTextBrush}"
+                       HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    <!-- Simpler: combine into one bound string in the ViewModel instead of StringFormat gymnastics -->
+
+                    <ProgressBar Minimum="0" Maximum="{Binding ImportTotal}"
+                         Value="{Binding ImportCurrent}"
+                         Height="6"
+                         Foreground="{StaticResource AccentBrush}"
+                         Background="{StaticResource TileBackgroundBrush}"
+                         BorderThickness="0"/>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

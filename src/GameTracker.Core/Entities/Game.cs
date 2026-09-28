@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameTracker.Core
+namespace GameTracker.Core.Entities
 {
     public class Game
     {
@@ -12,11 +12,14 @@ namespace GameTracker.Core
         
         public string Title { get; set; } = string.Empty;
 
-        public GameCategory Category { get; set; }
+        public GameType GameType { get; set; }
 
         public string? Platform { get; set; } 
 
         public string? Publisher { get; set; }
+
+        // The game ID from the publisher (Steam appid, GOG productID)
+        public string? PublisherGameID { get; set; }
 
         public int? MinPlayers { get; set; }
 
@@ -40,6 +43,6 @@ namespace GameTracker.Core
 
         public string? CoverImagePath { get; set; }
 
-        public ICollection<Tag> Tags { get; set; } = new List<Tag>();
+        public ICollection<GameTag> GameTags { get; set; } = new List<GameTag>();
     }
 }

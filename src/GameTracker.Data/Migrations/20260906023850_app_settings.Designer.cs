@@ -3,6 +3,7 @@ using System;
 using GameTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,12 +11,29 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GameTracker.Data.Migrations
 {
     [DbContext(typeof(GameTrackerContext))]
-    partial class GameTrackerContextModelSnapshot : ModelSnapshot
+    [Migration("20260906023850_app_settings")]
+    partial class app_settings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
+
+            modelBuilder.Entity("GameTag", b =>
+                {
+                    b.Property<int>("GamesID")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<int>("TagsID")
+                        .HasColumnType("INTEGER");
+
+                    b.HasKey("GamesID", "TagsID");
+
+                    b.HasIndex("TagsID");
+
+                    b.ToTable("GameTags", (string)null);
+                });
 
             modelBuilder.Entity("GameTracker.Core.Entities.AppSettings", b =>
                 {
@@ -33,9 +51,6 @@ namespace GameTracker.Data.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("Key")
-                        .IsUnique();
-
                     b.ToTable("AppSettings");
                 });
 
@@ -45,14 +60,14 @@ namespace GameTracker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Completed")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("CoverImagePath")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GameType")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("IconPath")
@@ -79,9 +94,6 @@ namespace GameTracker.Data.Migrations
                     b.Property<string>("Publisher")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("PublisherGameID")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("PurchasedFrom")
                         .IsRequired()
                         .HasColumnType("TEXT");
@@ -99,21 +111,6 @@ namespace GameTracker.Data.Migrations
                     b.HasIndex("Title");
 
                     b.ToTable("Games");
-                });
-
-            modelBuilder.Entity("GameTracker.Core.Entities.GameTag", b =>
-                {
-                    b.Property<int>("GameId")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<int>("TagId")
-                        .HasColumnType("INTEGER");
-
-                    b.HasKey("GameId", "TagId");
-
-                    b.HasIndex("TagId");
-
-                    b.ToTable("GameTags");
                 });
 
             modelBuilder.Entity("GameTracker.Core.Entities.Tag", b =>
@@ -135,33 +132,19 @@ namespace GameTracker.Data.Migrations
                     b.ToTable("Tags");
                 });
 
-            modelBuilder.Entity("GameTracker.Core.Entities.GameTag", b =>
+            modelBuilder.Entity("GameTag", b =>
                 {
-                    b.HasOne("GameTracker.Core.Entities.Game", "Game")
-                        .WithMany("GameTags")
-                        .HasForeignKey("GameId")
+                    b.HasOne("GameTracker.Core.Entities.Game", null)
+                        .WithMany()
+                        .HasForeignKey("GamesID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("GameTracker.Core.Entities.Tag", "Tag")
-                        .WithMany("GameTags")
-                        .HasForeignKey("TagId")
+                    b.HasOne("GameTracker.Core.Entities.Tag", null)
+                        .WithMany()
+                        .HasForeignKey("TagsID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Game");
-
-                    b.Navigation("Tag");
-                });
-
-            modelBuilder.Entity("GameTracker.Core.Entities.Game", b =>
-                {
-                    b.Navigation("GameTags");
-                });
-
-            modelBuilder.Entity("GameTracker.Core.Entities.Tag", b =>
-                {
-                    b.Navigation("GameTags");
                 });
 #pragma warning restore 612, 618
         }

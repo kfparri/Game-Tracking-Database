@@ -3,6 +3,7 @@ using System;
 using GameTracker.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace GameTracker.Data.Migrations
 {
     [DbContext(typeof(GameTrackerContext))]
-    partial class GameTrackerContextModelSnapshot : ModelSnapshot
+    [Migration("20260906135902_add_tags")]
+    partial class add_tags
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.11");
@@ -45,14 +48,14 @@ namespace GameTracker.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<bool>("Completed")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("CoverImagePath")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("GameType")
-                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("IconPath")
@@ -77,9 +80,6 @@ namespace GameTracker.Data.Migrations
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Publisher")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PublisherGameID")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PurchasedFrom")

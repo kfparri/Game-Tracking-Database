@@ -1,0 +1,4 @@
+Command reference:
+
+create new migration:
+dotnet ef migrations add add_tags --project .\GameTracker.Data\

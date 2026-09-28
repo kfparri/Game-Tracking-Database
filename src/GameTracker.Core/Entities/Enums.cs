@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameTracker.Core
+namespace GameTracker.Core.Entities
 {
-    public enum GameCategory { Video, Board, Card, Other }
+    public enum GameType { Video, Board, Card, Other }
 }

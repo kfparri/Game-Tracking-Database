@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace GameTracker.Data
+namespace GameTracker.Data.Services
 {
     public interface IImageStorageService
     {
